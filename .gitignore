@@ -1,0 +1,24 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Python virtual environment
+.mgenv/
+venv/
+env/
+.env/
+
+# LiteRT / TFLite models
+*.tflite
+*.bin
+*.pt
+*.safetensors
+*.json
+!README.md
+!GEMINI.md
+!*.py
