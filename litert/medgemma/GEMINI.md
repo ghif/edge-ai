@@ -1,6 +1,6 @@
 # MedGemma to LiteRT Agent Rules
 
-- **Objective**: Convert `google/medgemma-1.5-4b-it` to a 4-bit quantized LiteRT (.bin) bundle. The source comes from https://huggingface.co/google/medgemma-1.5-4b-it
+- **Objective**: Convert `google/medgemma-1.5-4b-it` to a 4-bit quantized LiteRT (.task) bundle. The source comes from https://huggingface.co/google/medgemma-1.5-4b-it
 - **Tools Priority**: Use `mediapipe` for the final bundle and `ai-edge-torch` if a custom SigLIP conversion is needed.
 - **Constraints**:
   - Always check available disk space before downloading weights.
