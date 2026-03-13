@@ -19,5 +19,5 @@
   3. **Critical**: MedGemma 1.5 has a 3D SigLIP encoder. If the standard converter fails, the agent must check `ai-edge-torch` for the "Multimodal Task" export path.
   4. Monitor memory using `system-monitor`. If RAM pressure exceeds 80%, suggest a swap-file or `low_cpu_mem_usage`.
   5. Final converted models are stored with prefix `medgemma-1.5-4b-it*`.
-  6. **CUDA Compatibility**: Ensure all installed Python libraries (especially `torch`, `jax`, and `mediapipe`) are compatible with the system's CUDA version (CUDA 11.8).
+  6. **CUDA Compatibility**: Ensure all installed Python libraries (especially `torch`, `jax`, and `mediapipe`) are compatible with the system's CUDA version (CUDA 12.4).
   7. **Execution Mode**: Execute the task with `--yolo` mode enabled for accelerated processing.

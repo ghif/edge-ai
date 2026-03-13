@@ -18,10 +18,9 @@ def main():
         )
         
         print("Applying INT4 quantization...")
-        quantized_model = q.quantize()
+        quantization_result = q.quantize()
         
-        with open(output_tflite, "wb") as f:
-            f.write(quantized_model.model)
+        quantization_result.export_model(output_tflite)
         
         print(f"Successfully quantized vision encoder to {output_tflite}")
     except Exception as e:

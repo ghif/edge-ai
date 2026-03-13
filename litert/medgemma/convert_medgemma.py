@@ -92,16 +92,16 @@ def main():
         # Note: We don't pass 'use_cache' in sample_args if the converter expects only tensors
         
         # Extract sample args - ONLY TENSORS
-        sample_args = (sample_inputs['input_ids'], sample_inputs['pixel_values'])
+        sample_args = (sample_inputs['input_ids'],)
         
         # Wrapper to avoid DynamicCache in output
         class ModelWrapper(torch.nn.Module):
             def __init__(self, model):
                 super().__init__()
                 self.model = model
-            def forward(self, input_ids, pixel_values):
+            def forward(self, input_ids):
                 # Explicitly return only logits
-                outputs = self.model(input_ids=input_ids, pixel_values=pixel_values, use_cache=False)
+                outputs = self.model(input_ids=input_ids, use_cache=False)
                 return outputs.logits
 
         wrapped_model = ModelWrapper(model).eval()

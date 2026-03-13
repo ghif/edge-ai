@@ -25,7 +25,7 @@ def main():
         output_filename=args.output_filename,
         prompt_prefix_user="<start_of_turn>user\n",
         prompt_suffix_user="<end_of_turn>\n<start_of_turn>model\n",
-        tflite_vision_encoder="medgemma-1.5-4b-vision.tflite"
+        tflite_vision_encoder="medgemma-1.5-4b-vision-int4.tflite"
     )
     bundler.create_bundle(b_config)
     print(f"Bundle successfully created: {args.output_filename}")

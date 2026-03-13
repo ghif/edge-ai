@@ -37,13 +37,14 @@ def main():
     # The get_image_encoder_config says image_size=896
     pixel_values = torch.zeros(1, 3, 896, 896, dtype=torch.float32)
     
-    quant_config = quant_recipes.full_dynamic_recipe(
-        weight_dtype=Dtype.INT4, 
-        granularity=Granularity.BLOCKWISE_32
-    )
+    # Bypass quantization here; we will quantize later using quantize_vision.py
+    # quant_config = quant_recipes.full_dynamic_recipe(
+    #     weight_dtype=Dtype.INT4, 
+    #     granularity=Granularity.CHANNELWISE
+    # )
 
     try:
-        edge_model = ai_edge_torch.convert(encoder, (pixel_values,), quant_config=quant_config)
+        edge_model = ai_edge_torch.convert(encoder, (pixel_values,))
         
         output_file = "medgemma-1.5-4b-vision.tflite"
         edge_model.export(output_file)
