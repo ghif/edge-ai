@@ -1,0 +1,110 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1773387070.819049   93708 cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Skipping import of cpp extensions due to incompatible torch version 2.9.1+cu128 for torchao version 0.16.0             Please see https://github.com/pytorch/ao/issues/2919 for more info
+/opt/conda/envs/mgenv/lib/python3.11/site-packages/torch/distributed/distributed_c10d.py:351: UserWarning: Device capability of jax unspecified, assuming `cpu` and `cuda`. Please specify it via the `devices` argument of `register_backend`.
+  warnings.warn(
+`torch_dtype` is deprecated! Use `dtype` instead!
+
+Loading weights:   0%|          | 0/883 [00:00<?, ?it/s]
+Loading weights:   0%|          | 1/883 [00:24<5:58:47, 24.41s/it]
+Loading weights:  28%|██▊       | 250/883 [00:24<00:43, 14.45it/s]
+Loading weights:  43%|████▎     | 382/883 [00:34<00:35, 14.22it/s]
+Loading weights:  49%|████▉     | 437/883 [00:37<00:30, 14.40it/s]
+Loading weights:  53%|█████▎    | 468/883 [00:37<00:25, 16.56it/s]
+Loading weights:  56%|█████▌    | 494/883 [00:38<00:20, 18.83it/s]
+Loading weights:  58%|█████▊    | 515/883 [00:38<00:17, 21.46it/s]
+Loading weights:  60%|██████    | 533/883 [00:38<00:14, 24.47it/s]
+Loading weights:  62%|██████▏   | 550/883 [00:38<00:11, 28.16it/s]
+Loading weights:  64%|██████▍   | 565/883 [00:38<00:09, 32.17it/s]
+Loading weights:  66%|██████▌   | 579/883 [00:38<00:08, 36.72it/s]
+Loading weights:  67%|██████▋   | 591/883 [00:39<00:07, 40.92it/s]
+Loading weights:  68%|██████▊   | 602/883 [00:39<00:06, 45.03it/s]
+Loading weights:  70%|██████▉   | 617/883 [00:39<00:04, 53.46it/s]
+Loading weights:  71%|███████▏  | 631/883 [00:39<00:04, 62.79it/s]
+Loading weights:  73%|███████▎  | 647/883 [00:39<00:03, 72.10it/s]
+Loading weights:  75%|███████▌  | 663/883 [00:39<00:02, 80.30it/s]
+Loading weights:  77%|███████▋  | 679/883 [00:39<00:02, 86.55it/s]
+Loading weights:  79%|███████▊  | 695/883 [00:40<00:02, 92.36it/s]
+Loading weights:  81%|████████  | 711/883 [00:40<00:01, 96.61it/s]
+Loading weights:  82%|████████▏ | 727/883 [00:40<00:01, 102.17it/s]
+Loading weights:  84%|████████▍ | 743/883 [00:40<00:01, 102.20it/s]
+Loading weights:  86%|████████▌ | 759/883 [00:40<00:01, 105.52it/s]
+Loading weights:  88%|████████▊ | 775/883 [00:40<00:01, 107.95it/s]
+Loading weights:  90%|████████▉ | 791/883 [00:40<00:00, 104.19it/s]
+Loading weights:  91%|█████████▏| 807/883 [00:41<00:00, 105.05it/s]
+Loading weights:  93%|█████████▎| 823/883 [00:41<00:00, 107.14it/s]
+Loading weights:  95%|█████████▌| 839/883 [00:41<00:00, 106.13it/s]
+Loading weights:  97%|█████████▋| 855/883 [00:41<00:00, 107.33it/s]
+Loading weights:  99%|█████████▊| 871/883 [00:41<00:00, 109.35it/s]
+Loading weights: 100%|██████████| 883/883 [00:41<00:00, 21.18it/s] 
+W0000 00:00:1773387354.798732   93708 tf_tfl_flatbuffer_helpers.cc:364] Ignored output_format.
+W0000 00:00:1773387354.800641   93708 tf_tfl_flatbuffer_helpers.cc:367] Ignored drop_control_dependency.
+I0000 00:00:1773387354.827143   93708 reader.cc:83] Reading SavedModel from: /var/tmp/tmps9bw3jrp
+I0000 00:00:1773387354.867973   93708 reader.cc:52] Reading meta graph with tags { serve }
+I0000 00:00:1773387354.868011   93708 reader.cc:147] Reading SavedModel debug info (if present) from: /var/tmp/tmps9bw3jrp
+I0000 00:00:1773387355.100166   93708 mlir_graph_optimization_pass.cc:437] MLIR V1 optimization pass is not enabled
+I0000 00:00:1773387355.140823   93708 loader.cc:236] Restoring SavedModel bundle.
+I0000 00:00:1773387375.030072   93708 loader.cc:220] Running initialization op on SavedModel bundle at path: /var/tmp/tmps9bw3jrp
+I0000 00:00:1773387375.459199   93708 loader.cc:471] SavedModel load for tags { serve }; Status: success: OK. Took 20632083 microseconds.
+I0000 00:00:1773387375.897441   93708 dump_mlir_util.cc:269] disabling MLIR crash reproducer, set env var `MLIR_CRASH_REPRODUCER_DIRECTORY` to enable.
+loc("__main__.main.<locals>.ModelWrapper/transformers.models.gemma3.modeling_gemma3.Gemma3ForConditionalGeneration_model/transformers.models.gemma3.modeling_gemma3.Gemma3Model_model/transformers.models.gemma3.modeling_gemma3.Gemma3TextScaledWordEmbedding_embed_tokens;"("embedding"("/opt/conda/envs/mgenv/lib/python3.11/site-packages/torch/nn/modules/sparse.py":192:0))): error: failed to legalize operation 'tfl.embedding_lookup' that was explicitly marked illegal
+Traceback (most recent call last):
+  File "/home/mghifary/edge-ai/litert/medgemma/convert_medgemma.py", line 121, in main
+    edge_model = ai_edge_torch.convert(wrapped_model, sample_args, quant_config=quant_config)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/mgenv/lib/python3.11/site-packages/litert_torch/_convert/converter.py", line 315, in convert
+    return Converter().convert(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/mgenv/lib/python3.11/site-packages/litert_torch/_convert/converter.py", line 203, in convert
+    converted_model = conversion.convert_signatures(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/mgenv/lib/python3.11/site-packages/litert_torch/_convert/conversion.py", line 152, in convert_signatures
+    tflite_model = lowertools.exported_programs_to_tflite(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/mgenv/lib/python3.11/site-packages/litert_torch/lowertools/_shim.py", line 80, in exported_programs_to_tflite
+    return utils.merged_bundle_to_tfl_model(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/mgenv/lib/python3.11/site-packages/litert_torch/lowertools/odml_torch_utils.py", line 208, in merged_bundle_to_tfl_model
+    tflite_model = converter.convert()
+                   ^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/mgenv/lib/python3.11/site-packages/tensorflow/lite/python/lite.py", line 1254, in wrapper
+    return self._convert_and_export_metrics(convert_func, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/mgenv/lib/python3.11/site-packages/tensorflow/lite/python/lite.py", line 1206, in _convert_and_export_metrics
+    result = convert_func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/mgenv/lib/python3.11/site-packages/tensorflow/lite/python/lite.py", line 1590, in convert
+    return self._convert_from_saved_model(graph_def)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/mgenv/lib/python3.11/site-packages/tensorflow/lite/python/lite.py", line 1448, in _convert_from_saved_model
+    result = _convert_saved_model(**converter_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/mgenv/lib/python3.11/site-packages/tensorflow/lite/python/convert_phase.py", line 212, in wrapper
+    raise converter_error from None  # Re-throws the exception.
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/mgenv/lib/python3.11/site-packages/tensorflow/lite/python/convert_phase.py", line 205, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/mgenv/lib/python3.11/site-packages/tensorflow/lite/python/convert.py", line 893, in convert_saved_model
+    data = convert(
+           ^^^^^^^^
+  File "/opt/conda/envs/mgenv/lib/python3.11/site-packages/tensorflow/lite/python/convert.py", line 348, in convert
+    raise converter_error
+tensorflow.lite.python.convert_phase.ConverterError: /opt/conda/envs/mgenv/lib/python3.11/site-packages/torch/nn/modules/sparse.py:192:0: error: failed to legalize operation 'tfl.embedding_lookup' that was explicitly marked illegal
+
+
+ERROR conda.cli.main_run:execute(125): `conda run python -u convert_medgemma.py --yolo` failed. (See above for error)
+[Memory] System RAM Usage: 5.9%
+[YOLO] Skipping standard MediaPipe conversion.
+Falling back to ai-edge-torch PyTorch loading with low_cpu_mem_usage=True...
+[Memory] System RAM Usage: 9.1%
+Loading PyTorch model and processor...
+[Memory] System RAM Usage: 43.1%
+Model and processor loaded into RAM.
+Creating sample inputs for tracing...
+Proceeding to manual ai-edge-torch multimodal quantization...
+Attempting to convert wrapped model with sample_args...
+ai-edge-torch convert failed: /opt/conda/envs/mgenv/lib/python3.11/site-packages/torch/nn/modules/sparse.py:192:0: error: failed to legalize operation 'tfl.embedding_lookup' that was explicitly marked illegal
+
+
