@@ -1,0 +1,23 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1773423242.936475  108592 cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Skipping import of cpp extensions due to incompatible torch version 2.9.1+cu128 for torchao version 0.16.0             Please see https://github.com/pytorch/ao/issues/2919 for more info
+/opt/conda/envs/mgenv/lib/python3.11/site-packages/torch/distributed/distributed_c10d.py:351: UserWarning: Device capability of jax unspecified, assuming `cpu` and `cuda`. Please specify it via the `devices` argument of `register_backend`.
+  warnings.warn(
+W0000 00:00:1773423570.258623  110072 cpu_allocator_impl.cc:84] Allocation of 104857600 exceeds 10% of free system memory.
+W0000 00:00:1773423570.258579  110070 cpu_allocator_impl.cc:84] Allocation of 104857600 exceeds 10% of free system memory.
+W0000 00:00:1773423570.258699  110073 cpu_allocator_impl.cc:84] Allocation of 104857600 exceeds 10% of free system memory.
+W0000 00:00:1773423570.258744  110074 cpu_allocator_impl.cc:84] Allocation of 2685009920 exceeds 10% of free system memory.
+W0000 00:00:1773423570.258591  110071 cpu_allocator_impl.cc:84] Allocation of 104857600 exceeds 10% of free system memory.
+/var/tmp/tmpby1ejx1g: line 3: 108592 Killed                  python -u convert_text.py
+
+ERROR conda.cli.main_run:execute(125): `conda run python -u convert_text.py` failed. (See above for error)
+[Memory] System RAM Usage: 12.8%
+Step 1: Building MedGemma 4B text model structure...
+Step 2: Initialize generative converter...
+Step 3: Tracing Text Decoder with dynamic_int4_block32...
+[Heartbeat] RAM: 70.6%
+[Heartbeat] RAM: 70.9%
+[Heartbeat] RAM: 71.1%
+[Heartbeat] RAM: 71.9%
+

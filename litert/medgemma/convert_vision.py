@@ -4,21 +4,25 @@ import sys
 import psutil
 
 os.environ["TMPDIR"] = os.path.abspath(".")
+os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
 os.environ["TEMP"] = os.path.abspath(".")
 os.environ["TMP"] = os.path.abspath(".")
-
-sys.path.insert(0, os.path.abspath("./ai-edge-torch"))
 
 import litert_torch as ai_edge_torch
 from litert_torch.generative.examples.gemma3 import image_encoder
 from litert_torch.generative.utilities import loader as loading_utils
+from litert_torch.generative.quantize import quant_recipes
 from safetensors.torch import load_file
 
 def main():
-    torch.set_default_device('cuda')
-    print("Building image encoder...")
+    # Force CPU tracing to bypass CUDA memory segfaults during MLIR export
+    torch.set_default_device('cpu')
+    torch.set_default_dtype(torch.float32)
+    torch.backends.cuda.enable_mem_efficient_sdp(False)
+    torch.backends.cuda.enable_flash_sdp(False)
+    torch.backends.cuda.enable_math_sdp(True)
     
-    # Map HF tensor names to litert_torch expectations
+    print("Building image encoder on CPU...")
     image_encoder.TENSOR_NAMES = loading_utils.ModelLoader.TensorNames(
         ff_up_proj="vision_tower.vision_model.encoder.layers.{}.mlp.fc1",
         ff_down_proj="vision_tower.vision_model.encoder.layers.{}.mlp.fc2",
@@ -33,24 +37,16 @@ def main():
         final_norm="vision_tower.vision_model.post_layernorm",
     )
     
-    # The instruction says: "Crucial Fix: You must map the multi_modal_projector weights in the TENSOR_NAMES mapping"
-    # Even if they are not officially part of ModelLoader.TensorNames, we set them as requested.
-    setattr(image_encoder.TENSOR_NAMES, "mm_input_projection_weight", "multi_modal_projector.linear_1.weight")
-    setattr(image_encoder.TENSOR_NAMES, "mm_soft_emb_norm_weight", "multi_modal_projector.linear_2.weight")
-    
     checkpoint_path = "./medgemma-1.5-4b-pytorch"
     encoder = image_encoder.build_image_encoder(checkpoint_path)
     
-    # Load multi-modal projector directly to attach it to the vision encoder
     class VisionWithProjector(torch.nn.Module):
         def __init__(self, encoder):
             super().__init__()
             self.encoder = encoder
-            # The projector architecture for MedGemma 1.5 might be linear layers and norms.
-            # Using safetensors to find actual projector shapes:
             self.projector_loaded = False
-            self.proj_linear_1 = None
-            self.proj_linear_2 = None
+            self.mm_soft_emb_norm_weight = None
+            self.mm_input_projection_weight = None
             
         def load_projector(self, ckpt_path):
             st_files = [f for f in os.listdir(ckpt_path) if f.endswith(".safetensors")]
@@ -58,71 +54,59 @@ def main():
             for st in st_files:
                 state_dict.update(load_file(os.path.join(ckpt_path, st), device='cpu'))
             
-            # Find the projector weights
-            keys = state_dict.keys()
-            proj_keys = [k for k in keys if 'multi_modal_projector' in k]
-            print("Projector keys found in checkpoint:", proj_keys)
+            k_norm = 'multi_modal_projector.mm_soft_emb_norm.weight'
+            k_proj = 'multi_modal_projector.mm_input_projection_weight'
             
-            if 'multi_modal_projector.linear_1.weight' in state_dict:
-                w1 = state_dict['multi_modal_projector.linear_1.weight'].to('cuda')
-                b1 = state_dict['multi_modal_projector.linear_1.bias'].to('cuda')
-                self.proj_linear_1 = torch.nn.Linear(w1.shape[1], w1.shape[0], bias=True)
-                self.proj_linear_1.weight.data = w1
-                self.proj_linear_1.bias.data = b1
-                
-                if 'multi_modal_projector.linear_2.weight' in state_dict:
-                    w2 = state_dict['multi_modal_projector.linear_2.weight'].to('cuda')
-                    b2 = state_dict['multi_modal_projector.linear_2.bias'].to('cuda')
-                    self.proj_linear_2 = torch.nn.Linear(w2.shape[1], w2.shape[0], bias=True)
-                    self.proj_linear_2.weight.data = w2
-                    self.proj_linear_2.bias.data = b2
-                
+            if k_norm in state_dict and k_proj in state_dict:
+                self.mm_soft_emb_norm_weight = torch.nn.Parameter(state_dict[k_norm].clone().detach().to('cpu'))
+                self.mm_input_projection_weight = torch.nn.Parameter(state_dict[k_proj].clone().detach().to('cpu'))
                 self.projector_loaded = True
-        
+                print("Projector weights loaded successfully.")
+            else:
+                print("Projector weights not found!")
+                
         def forward(self, pixel_values):
             x = self.encoder(pixel_values)
             if self.projector_loaded:
-                x = self.proj_linear_1(x)
-                x = torch.nn.functional.gelu(x)
-                if self.proj_linear_2 is not None:
-                    x = self.proj_linear_2(x)
+                x = torch.nn.functional.layer_norm(x, [x.shape[-1]], weight=self.mm_soft_emb_norm_weight, bias=None)
+                x = torch.matmul(x, self.mm_input_projection_weight)
             return x
 
     encoder_with_proj = VisionWithProjector(encoder)
     encoder_with_proj.load_projector(checkpoint_path)
+    encoder_with_proj.to(torch.float32)
+    encoder_with_proj.to('cpu')
     encoder_with_proj.eval()
+    encoder_with_proj.requires_grad_(False)
     
-    print("Vision encoder + projector loaded. Tracing and converting to LiteRT INT4...")
-    
-    torch.backends.cuda.enable_mem_efficient_sdp(False)
-    torch.backends.cuda.enable_flash_sdp(False)
-    torch.backends.cuda.enable_math_sdp(True)
-    
-    # Dummy inputs: (1, 3, 896, 896) based on image_encoder config
-    pixel_values = torch.zeros(1, 3, 896, 896, dtype=torch.float32, device='cuda')
-    
-    # We must quantize to INT4
-    edge_model = ai_edge_torch.convert(encoder_with_proj, (pixel_values,))
-    temp_file = "medgemma-1.5-4b-vision.tflite"
-    edge_model.export(temp_file)
-    print(f"Successfully exported vision encoder to {temp_file}")
-    
-    print("Quantizing with ai_edge_quantizer...")
-    from ai_edge_quantizer import quantizer
-    from ai_edge_quantizer import qtyping
-    
-    q = quantizer.Quantizer(temp_file)
-    q.add_weight_only_config(
-        regex=".*",
-        operation_name=qtyping.TFLOperationName.ALL_SUPPORTED,
-        num_bits=4,
-        granularity=qtyping.QuantGranularity.CHANNELWISE
-    )
-    
-    quantization_result = q.quantize()
-    output_file = "medgemma-1.5-4b-vision-int4.tflite"
-    quantization_result.export_model(output_file)
-    print(f"Successfully quantized vision encoder to {output_file}")
+    print("Tracing vision encoder + projector...")
+    pixel_values = torch.zeros(1, 3, 896, 896, dtype=torch.float32, device='cpu')
+    try:
+        from litert_torch.generative.quantize.quant_attrs import Dtype, Granularity
+        quant_recipe = quant_recipes.full_weight_only_recipe(weight_dtype=Dtype.INT4)
+        edge_model = ai_edge_torch.convert(encoder_with_proj, (pixel_values,), quantization_config=quant_recipe)
+        output_file = "medgemma-1.5-4b-vision-int4.tflite"
+        edge_model.export(output_file)
+        print(f"Successfully quantized and exported to {output_file}")
+    except Exception as e:
+        print(f"Fallback due to {e}")
+        edge_model = ai_edge_torch.convert(encoder_with_proj, (pixel_values,))
+        temp_file = "medgemma-1.5-4b-vision.tflite"
+        edge_model.export(temp_file)
+        
+        from ai_edge_quantizer import quantizer
+        from ai_edge_quantizer import qtyping
+        q = quantizer.Quantizer(temp_file)
+        q.add_weight_only_config(
+            regex=".*",
+            operation_name=qtyping.TFLOperationName.ALL_SUPPORTED,
+            num_bits=4,
+            granularity=qtyping.QuantGranularity.CHANNELWISE
+        )
+        quantization_result = q.quantize()
+        output_file = "medgemma-1.5-4b-vision-int4.tflite"
+        quantization_result.export_model(output_file)
+        print(f"Quantized vision exported to {output_file} via quantizer fallback.")
 
 if __name__ == "__main__":
     main()

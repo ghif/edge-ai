@@ -26,7 +26,7 @@ Before executing any conversion scripts, enforce the following environment rules
 ### Phase 2: Text Decoder Conversion
 * **File:** `convert_text.py`
 * **Task:** Load the `language_model` backbone using `build_decoder_only_model()`.
-* **Quantization:** Apply INT4 weight-only or dynamic quantization via `litert_torch.generative.quantize_recipes`.
+* **Quantization:** perform the quantization by the following steps: quantize to 8B (weight only) through ai-edge-torch, and then apply INT4 later during MediaPipe bundling phase.
 * **Output:** `medgemma-1.5-4b-text-int4.tflite`
 
 ### Phase 3: Bundling / Integration
@@ -62,3 +62,4 @@ Before executing any conversion scripts, enforce the following environment rules
   5. Final converted models are stored with prefix `medgemma-1.5-4b-it*`.
   6. **CUDA Compatibility**: Ensure all installed Python libraries (especially `torch`, `jax`, and `mediapipe`) are compatible with the system's CUDA version (CUDA 12.4).
   7. **Execution Mode**: Execute the task with `--yolo` mode enabled for accelerated processing.
+  8. **Conversion Device**: use cuda mode first for every conversion attempt. if it fails, use cpu mode.
