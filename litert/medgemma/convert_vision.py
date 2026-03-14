@@ -15,12 +15,10 @@ from litert_torch.generative.quantize import quant_recipes
 from safetensors.torch import load_file
 
 def main():
-    # Force CPU tracing to bypass CUDA memory segfaults during MLIR export
+    # Force CPU tracing
     torch.set_default_device('cpu')
     torch.set_default_dtype(torch.float32)
-    torch.backends.cuda.enable_mem_efficient_sdp(False)
-    torch.backends.cuda.enable_flash_sdp(False)
-    torch.backends.cuda.enable_math_sdp(True)
+    # CUDA is disabled for this conversion
     
     print("Building image encoder on CPU...")
     image_encoder.TENSOR_NAMES = loading_utils.ModelLoader.TensorNames(

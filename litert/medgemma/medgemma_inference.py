@@ -65,7 +65,7 @@ class MedGemmaMultimodal:
 if __name__ == '__main__':
     pipeline = MedGemmaMultimodal(
         'medgemma-1.5-4b-vision-int4.tflite',
-        'medgemma-1.5-4b-text-int4.tflite',
+        'medgemma-1.5-4b-text-int8.tflite',
         'medgemma-1.5-4b-pytorch/tokenizer.model'
     )
     print(pipeline.generate('sample.jpg', 'What are the findings in this scan?'))

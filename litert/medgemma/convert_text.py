@@ -3,6 +3,9 @@ import psutil
 import gc
 import sys
 import torch
+import faulthandler
+
+faulthandler.enable()
 
 os.environ["TMPDIR"] = os.path.abspath(".")
 os.environ["TEMP"] = os.path.abspath(".")
@@ -63,21 +66,20 @@ def get_medgemma_config():
     return cfg.ModelConfig(
         vocab_size=262208,
         num_layers=34,
-        max_seq_len=16,
+        max_seq_len=1,
         embedding_dim=2560,
         block_configs=[get_block_config(i) for i in range(34)],
         final_norm_config=norm_config,
         embedding_scale=2560**0.5,
     )
 
-def run_conversion(device):
+def run_conversion(device='cpu'):
     torch.set_default_dtype(torch.float32)
     torch.set_default_device(device)
-    torch.backends.cuda.enable_mem_efficient_sdp(False)
-    torch.backends.cuda.enable_flash_sdp(False)
-    torch.backends.cuda.enable_math_sdp(True)
+    # Remove CUDA-specific SDP settings
     check_memory()
     print(f"Step 1: Building MedGemma 4B text model structure on {device}...")
+    sys.stdout.flush()
     
     medgemma_tensor_names = loading_utils.ModelLoader.TensorNames(
         ff_up_proj="language_model.model.layers.{}.mlp.up_proj",
@@ -100,14 +102,18 @@ def run_conversion(device):
     
     medgemma_config = get_medgemma_config()
     input_ckpt = "./medgemma-1.5-4b-pytorch"
+    print(f"Loading weights from {input_ckpt}...")
     text_model = model_builder.build_decoder_only_model(
         checkpoint_path=input_ckpt,
         config=medgemma_config,
         tensor_names=medgemma_tensor_names,
         model_class=decoder.Decoder,
     )
+    print("Model built successfully.")
+    sys.stdout.flush()
     
     print("Step 2: Initialize generative converter...")
+    sys.stdout.flush()
     from litert_torch.generative.utilities import converter as gen_converter
     from litert_torch.generative.layers import kv_cache as kv_utils
     
@@ -116,26 +122,15 @@ def run_conversion(device):
         kvcache_layout=kv_utils.KV_LAYOUT_DEFAULT
     )
     
-    import threading
-    import time
-    def heartbeat():
-        while True:
-            time.sleep(60)
-            mem = psutil.virtual_memory()
-            print(f"[Heartbeat] RAM: {mem.percent}%")
-            sys.stdout.flush()
-    
-    h_thread = threading.Thread(target=heartbeat, daemon=True)
-    h_thread.start()
-
     gc.collect()
-    print("Step 3: Tracing Text Decoder with weight_only_int8...")
+    print("Step 3: Tracing Text Decoder with weight_only_int8 (This will take a while)...")
+    sys.stdout.flush()
     output_tflite = gen_converter.convert_to_tflite(
         pytorch_model=text_model,
         output_path=".",
         output_name_prefix="medgemma-1.5-4b-text",
         prefill_seq_len=[1],
-        kv_cache_max_len=2,
+        kv_cache_max_len=1,
         quantize='weight_only_int8',
         config=medgemma_config,
         export_config=export_config,
@@ -149,18 +144,10 @@ def run_conversion(device):
 
 def main():
     try:
-        run_conversion('cuda')
+        run_conversion('cpu')
     except Exception as e:
-        print(f"CUDA conversion failed: {e}. Falling back to CPU...")
-        del e
-        import gc
-        gc.collect()
-        import torch
-        torch.cuda.empty_cache()
-    else:
-        return
-    
-    run_conversion('cpu')
+        print(f"Conversion failed: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

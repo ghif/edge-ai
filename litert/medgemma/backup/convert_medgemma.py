@@ -41,9 +41,10 @@ def main():
         config = converter.ConversionConfig(
             input_ckpt=input_ckpt,
             ckpt_format="safetensors",
-            model_type="GEMMA3_4B", 
-            backend="gpu",
+            model_type="GEMMA3_4B",
+            backend="cpu",
             output_dir=".",
+
             combine_file_only=False,
             vocab_model_file=f"{input_ckpt}/tokenizer.model",
             output_tflite_file=tflite_out,
