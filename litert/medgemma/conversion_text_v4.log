@@ -1,0 +1,73 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1773569742.904194   52206 cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Skipping import of cpp extensions due to incompatible torch version 2.9.1+cu128 for torchao version 0.16.0             Please see https://github.com/pytorch/ao/issues/2919 for more info
+/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/torch/distributed/distributed_c10d.py:351: UserWarning: Device capability of jax unspecified, assuming `cpu` and `cuda`. Please specify it via the `devices` argument of `register_backend`.
+  warnings.warn(
+[Memory] System RAM Usage: 7.8%
+Step 1: Building MedGemma 4B text model structure on cpu...
+Model built successfully.
+Step 3: Tracing Text Decoder (Unquantized FP16, this will take a while)...
+W0000 00:00:1773570060.512900   52206 tf_tfl_flatbuffer_helpers.cc:364] Ignored output_format.
+W0000 00:00:1773570060.512941   52206 tf_tfl_flatbuffer_helpers.cc:367] Ignored drop_control_dependency.
+I0000 00:00:1773570060.513862   52206 reader.cc:83] Reading SavedModel from: /home/mghifary/edge-ai/litert/medgemma/tmpuz4lw5xh
+I0000 00:00:1773570060.546798   52206 reader.cc:52] Reading meta graph with tags { serve }
+I0000 00:00:1773570060.546844   52206 reader.cc:147] Reading SavedModel debug info (if present) from: /home/mghifary/edge-ai/litert/medgemma/tmpuz4lw5xh
+I0000 00:00:1773570060.755503   52206 mlir_graph_optimization_pass.cc:437] MLIR V1 optimization pass is not enabled
+I0000 00:00:1773570060.783213   52206 loader.cc:236] Restoring SavedModel bundle.
+I0000 00:00:1773570063.447543   52206 loader.cc:220] Running initialization op on SavedModel bundle at path: /home/mghifary/edge-ai/litert/medgemma/tmpuz4lw5xh
+I0000 00:00:1773570063.794059   52206 loader.cc:471] SavedModel load for tags { serve }; Status: success: OK. Took 3280219 microseconds.
+I0000 00:00:1773570064.086020   52206 dump_mlir_util.cc:269] disabling MLIR crash reproducer, set env var `MLIR_CRASH_REPRODUCER_DIRECTORY` to enable.
+loc("litert_torch.generative.utilities.converter.ExportableModule/litert_torch.generative.examples.gemma3.decoder.Decoder_module/torch.nn.modules.sparse.Embedding_tok_embedding;"("embedding"("/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/torch/nn/modules/sparse.py":192:0))): error: failed to legalize operation 'tfl.embedding_lookup' that was explicitly marked illegal
+loc("litert_torch.generative.utilities.converter.ExportableModule/litert_torch.generative.examples.gemma3.decoder.Decoder_module/torch.nn.modules.sparse.Embedding_tok_embedding;"("embedding"("/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/torch/nn/modules/sparse.py":192:0))): error: failed to legalize operation 'tfl.embedding_lookup' that was explicitly marked illegal
+Conversion failed: /home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/torch/nn/modules/sparse.py:192:0: error: failed to legalize operation 'tfl.embedding_lookup' that was explicitly marked illegal
+/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/torch/nn/modules/sparse.py:192:0: error: failed to legalize operation 'tfl.embedding_lookup' that was explicitly marked illegal
+
+Traceback (most recent call last):
+  File "/home/mghifary/edge-ai/litert/medgemma/convert_text.py", line 134, in main
+    run_conversion('cpu')
+  File "/home/mghifary/edge-ai/litert/medgemma/convert_text.py", line 116, in run_conversion
+    output_tflite = gen_converter.convert_to_tflite(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/litert_torch/generative/utilities/converter.py", line 415, in convert_to_tflite
+    edge_model = converter.convert(
+                 ^^^^^^^^^^^^^^^^^^
+  File "/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/litert_torch/_convert/converter.py", line 203, in convert
+    converted_model = conversion.convert_signatures(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/litert_torch/_convert/conversion.py", line 152, in convert_signatures
+    tflite_model = lowertools.exported_programs_to_tflite(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/litert_torch/lowertools/_shim.py", line 80, in exported_programs_to_tflite
+    return utils.merged_bundle_to_tfl_model(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/litert_torch/lowertools/odml_torch_utils.py", line 208, in merged_bundle_to_tfl_model
+    tflite_model = converter.convert()
+                   ^^^^^^^^^^^^^^^^^^^
+  File "/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/tensorflow/lite/python/lite.py", line 1254, in wrapper
+    return self._convert_and_export_metrics(convert_func, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/tensorflow/lite/python/lite.py", line 1206, in _convert_and_export_metrics
+    result = convert_func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/tensorflow/lite/python/lite.py", line 1590, in convert
+    return self._convert_from_saved_model(graph_def)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/tensorflow/lite/python/lite.py", line 1448, in _convert_from_saved_model
+    result = _convert_saved_model(**converter_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/tensorflow/lite/python/convert_phase.py", line 212, in wrapper
+    raise converter_error from None  # Re-throws the exception.
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/tensorflow/lite/python/convert_phase.py", line 205, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/tensorflow/lite/python/convert.py", line 893, in convert_saved_model
+    data = convert(
+           ^^^^^^^^
+  File "/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/tensorflow/lite/python/convert.py", line 348, in convert
+    raise converter_error
+tensorflow.lite.python.convert_phase.ConverterError: /home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/torch/nn/modules/sparse.py:192:0: error: failed to legalize operation 'tfl.embedding_lookup' that was explicitly marked illegal
+/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/torch/nn/modules/sparse.py:192:0: error: failed to legalize operation 'tfl.embedding_lookup' that was explicitly marked illegal
+
+ERROR conda.cli.main_run:execute(142): `conda run python3 -u convert_text.py` failed. (See above for error)

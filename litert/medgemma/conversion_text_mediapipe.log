@@ -1,0 +1,6 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1773569214.675696   45609 cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Starting MediaPipe conversion for medgemma-1.5-4b-stripped...
+Conversion failed: 
+ERROR conda.cli.main_run:execute(142): `conda run python3 -u convert_text_mediapipe.py` failed. (See above for error)

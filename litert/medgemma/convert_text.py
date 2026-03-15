@@ -1,12 +1,9 @@
 import os
-import psutil
 import gc
 import sys
 import torch
-import faulthandler
 
-faulthandler.enable()
-
+# Force Temp Dir to current folder (Ensure you have 20GB+ free here)
 os.environ["TMPDIR"] = os.path.abspath(".")
 os.environ["TEMP"] = os.path.abspath(".")
 os.environ["TMP"] = os.path.abspath(".")
@@ -16,15 +13,8 @@ from litert_torch.generative.layers import model_config as cfg
 from litert_torch.generative.utilities import model_builder
 from litert_torch.generative.utilities import loader as loading_utils
 from litert_torch.generative.examples.gemma3 import decoder
-from litert_torch.generative.quantize import quant_recipes
-from litert_torch.generative.quantize.quant_attrs import Dtype, Granularity
-
-def check_memory():
-    mem = psutil.virtual_memory()
-    print(f"[Memory] System RAM Usage: {mem.percent}%")
-    if mem.percent > 80:
-        print("[WARNING] RAM pressure exceeds 80%. Consider creating a swap-file to prevent OOM.")
-        gc.collect()
+from litert_torch.generative.utilities import converter as gen_converter
+from litert_torch.generative.layers import kv_cache as kv_utils
 
 def get_medgemma_config():
     norm_config = cfg.NormalizationConfig(
@@ -33,9 +23,7 @@ def get_medgemma_config():
         with_scale=True,
         zero_centered=True,
     )
-    
     attn_patterns = [cfg.AttentionType.LOCAL_SLIDING] * 5 + [cfg.AttentionType.GLOBAL]
-    
     def get_block_config(idx: int):
         attn_type = attn_patterns[idx % 6]
         return cfg.TransformerBlockConfig(
@@ -62,7 +50,6 @@ def get_medgemma_config():
             pre_attention_norm_config=norm_config,
             post_attention_norm_config=norm_config,
         )
-
     return cfg.ModelConfig(
         vocab_size=262208,
         num_layers=34,
@@ -73,13 +60,10 @@ def get_medgemma_config():
         embedding_scale=2560**0.5,
     )
 
-def run_conversion(device='cpu'):
+def main():
+    # CRITICAL FIX 1: Must trace in FP32 so the MLIR compiler doesn't crash on the embedding lookup
     torch.set_default_dtype(torch.float32)
-    torch.set_default_device(device)
-    # Remove CUDA-specific SDP settings
-    check_memory()
-    print(f"Step 1: Building MedGemma 4B text model structure on {device}...")
-    sys.stdout.flush()
+    torch.set_default_device('cpu')
     
     medgemma_tensor_names = loading_utils.ModelLoader.TensorNames(
         ff_up_proj="language_model.model.layers.{}.mlp.up_proj",
@@ -100,22 +84,13 @@ def run_conversion(device='cpu'):
         lm_head=None,
     )
     
-    medgemma_config = get_medgemma_config()
-    input_ckpt = "./medgemma-1.5-4b-pytorch"
-    print(f"Loading weights from {input_ckpt}...")
+    print("Building MedGemma 4B Text Decoder in FP32...")
     text_model = model_builder.build_decoder_only_model(
-        checkpoint_path=input_ckpt,
-        config=medgemma_config,
+        checkpoint_path="./medgemma-1.5-4b-pytorch",
+        config=get_medgemma_config(),
         tensor_names=medgemma_tensor_names,
         model_class=decoder.Decoder,
     )
-    print("Model built successfully.")
-    sys.stdout.flush()
-    
-    print("Step 2: Initialize generative converter...")
-    sys.stdout.flush()
-    from litert_torch.generative.utilities import converter as gen_converter
-    from litert_torch.generative.layers import kv_cache as kv_utils
     
     export_config = gen_converter.ExportConfig(
         mask_as_input=True,
@@ -123,31 +98,25 @@ def run_conversion(device='cpu'):
     )
     
     gc.collect()
-    print("Step 3: Tracing Text Decoder with weight_only_int8 (This will take a while)...")
-    sys.stdout.flush()
+
+    print("Tracing and Quantizing to INT4 Block32 (This will take 15+ minutes)...")
+    # CRITICAL FIX 2: Use the exact official Enum for Gemma 3 Quantization
     output_tflite = gen_converter.convert_to_tflite(
         pytorch_model=text_model,
         output_path=".",
         output_name_prefix="medgemma-1.5-4b-text",
-        prefill_seq_len=[1],
-        kv_cache_max_len=1,
-        quantize='weight_only_int8',
-        config=medgemma_config,
+        prefill_seq_len=[128], # Expanded to match standard Gemma 3 export constraints
+        kv_cache_max_len=512,
+        quantize=gen_converter.QuantizationName.DYNAMIC_INT4_BLOCK32,
+        config=get_medgemma_config(),
         export_config=export_config,
     )
-    print("Step 4: Conversion finished.")
     
-    import shutil
     if output_tflite and os.path.exists(output_tflite):
-        shutil.move(output_tflite, "medgemma-1.5-4b-text-int4.tflite")
-        print(f"Successfully exported to medgemma-1.5-4b-text-int4.tflite")
-
-def main():
-    try:
-        run_conversion('cpu')
-    except Exception as e:
-        print(f"Conversion failed: {e}")
-        sys.exit(1)
+        import shutil
+        final_name = "medgemma-1.5-4b-text-int4.tflite"
+        shutil.move(output_tflite, final_name)
+        print(f"\n[SUCCESS] Model exported to {final_name}")
 
 if __name__ == "__main__":
     main()

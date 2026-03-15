@@ -80,31 +80,13 @@ def main():
     print("Tracing vision encoder + projector...")
     pixel_values = torch.zeros(1, 3, 896, 896, dtype=torch.float32, device='cpu')
     try:
-        from litert_torch.generative.quantize.quant_attrs import Dtype, Granularity
-        quant_recipe = quant_recipes.full_weight_only_recipe(weight_dtype=Dtype.INT4)
-        edge_model = ai_edge_torch.convert(encoder_with_proj, (pixel_values,), quantization_config=quant_recipe)
-        output_file = "medgemma-1.5-4b-vision-int4.tflite"
-        edge_model.export(output_file)
-        print(f"Successfully quantized and exported to {output_file}")
-    except Exception as e:
-        print(f"Fallback due to {e}")
         edge_model = ai_edge_torch.convert(encoder_with_proj, (pixel_values,))
-        temp_file = "medgemma-1.5-4b-vision.tflite"
-        edge_model.export(temp_file)
-        
-        from ai_edge_quantizer import quantizer
-        from ai_edge_quantizer import qtyping
-        q = quantizer.Quantizer(temp_file)
-        q.add_weight_only_config(
-            regex=".*",
-            operation_name=qtyping.TFLOperationName.ALL_SUPPORTED,
-            num_bits=4,
-            granularity=qtyping.QuantGranularity.CHANNELWISE
-        )
-        quantization_result = q.quantize()
-        output_file = "medgemma-1.5-4b-vision-int4.tflite"
-        quantization_result.export_model(output_file)
-        print(f"Quantized vision exported to {output_file} via quantizer fallback.")
+        output_file = "medgemma-1.5-4b-vision.tflite"
+        edge_model.export(output_file)
+        print(f"Successfully exported unquantized vision model to {output_file}")
+    except Exception as e:
+        print(f"Conversion failed: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

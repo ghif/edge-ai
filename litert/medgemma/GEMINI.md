@@ -1,7 +1,7 @@
 # Agent Directives: MedGemma 1.5 (4B) to LiteRT Multimodal Conversion (CPU Only)
 
 ## 1. Primary Objective
-Convert the Hugging Face `google/medgemma-1.5-4b-it` (a Vision-Language Model based on Gemma 3) into 4-bit quantized LiteRT format (`.tflite`) for use with MediaPipe, using CPU-only execution.
+Convert the Hugging Face `google/medgemma-1.5-4b-it` (a Vision-Language Model based on Gemma 3) into LiteRT format (`.tflite`) for use with MediaPipe, using CPU-only execution. The initial conversion must be unquantized; quantization will be performed as a subsequent step once the unquantized version is verified.
 
 ## 2. Architectural Strategy: The Split-Conversion
 Because MedGemma 1.5 is a multimodal model, standard single-pass conversions will drop the vision components or crash due to Out-of-Memory (OOM) errors. You **MUST** decouple the conversion into two separate scripts:
@@ -21,17 +21,21 @@ Before executing any conversion scripts, enforce the following environment rules
 * **Task:** Load the `vision_tower` using `ai-edge-torch`'s `image_encoder` builder on CPU.
 * **Crucial Fix:** You must map the `multi_modal_projector` weights in the `TENSOR_NAMES` mapping so that the vision features are properly projected into the LLM's embedding space. 
 * **Mapping Example:** Map `multi_modal_projector.mm_input_projection_weight` and `multi_modal_projector.mm_soft_emb_norm.weight`.
-* **Output:** `medgemma-1.5-4b-vision-int4.tflite`
+* **Output:** `medgemma-1.5-4b-vision.tflite`
 
 ### Phase 2: Text Decoder Conversion
 * **File:** `convert_text.py`
 * **Task:** Load the `language_model` backbone using `build_decoder_only_model()` on CPU.
-* **Quantization:** perform the quantization by the following steps: quantize to 8B (weight only) through ai-edge-torch, and then apply INT4 later during MediaPipe bundling phase.
-* **Output:** `medgemma-1.5-4b-text-int4.tflite`
+* **Quantization:** Do NOT apply quantization during this phase. Export the model in its full precision (or FP16 if supported) to create the base unquantized version.
+* **Output:** `medgemma-1.5-4b-text.tflite`
 
 ### Phase 3: Bundling / Integration
 * **File:** `bundle_model.py` (or instructions for Hugging Face Space deployment).
 * **Task:** Use the MediaPipe GenAI bundler to package the two `.tflite` files and the `tokenizer.model` into a unified `.task` or `.bin` package. Ensure the bundler uses the CPU backend for verification.
+
+### Phase 4: Quantization
+* **Task:** Once the unquantized `.task` bundle is verified, apply 4-bit quantization using the MediaPipe quantization tools or `ai-edge-torch` quantization recipes to produce the final optimized version.
+* **Output:** `medgemma-1.5-4b-it-int4.task`
 
 ## 5. Agent Workflow & Self-Correction
 * **Plan:** Verify hardware and paths (Ensure sufficient RAM for CPU-only tracing).
@@ -41,19 +45,19 @@ Before executing any conversion scripts, enforce the following environment rules
 
 # MedGemma to LiteRT Agent Rules
 
-- **Objective**: Convert `google/medgemma-1.5-4b-it` to a 4-bit quantized LiteRT (.task) bundle using CPU only.
+- **Objective**: Convert `google/medgemma-1.5-4b-it` to a LiteRT (.task) bundle using CPU only. The initial version must be unquantized.
 - **Tools Priority**: Use `mediapipe` for the final bundle and `ai-edge-torch` for model export.
 - **Constraints**:
   - Always check available disk space before downloading weights.
   - Use `low_cpu_mem_usage=True` to prevent OOM errors.
   - Verify every output file using the `interpreter` check on CPU.
-- **Workflow**: Plan -> Install Deps -> Convert -> Verify -> Document.
+- **Workflow**: Plan -> Install Deps -> Convert (Unquantized) -> Verify -> Quantize -> Document.
 
 # Agent Directives: MedGemma 1.5 LiteRT Conversion
 
 - **Environment**: linux (CPU Only)
 - **Virtual Environment**: Use conda environment "mgenv".
-- **Target**: MediaPipe Task Bundle (.task) with 4-bit quantization.
+- **Target**: Unquantized MediaPipe Task Bundle (.task) initially, followed by 4-bit quantization.
 - **Rules**:
   1. Use `hf-hub` to verify the `google/medgemma-1.5-4b-it` repo structure before downloading.
   2. Use `web-search` or context to find the 2026 `litert-torch` quantization recipes for Gemma 3.

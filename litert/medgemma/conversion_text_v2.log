@@ -1,0 +1,14 @@
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1773569389.712573   47779 cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Skipping import of cpp extensions due to incompatible torch version 2.9.1+cu128 for torchao version 0.16.0             Please see https://github.com/pytorch/ao/issues/2919 for more info
+/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/torch/distributed/distributed_c10d.py:351: UserWarning: Device capability of jax unspecified, assuming `cpu` and `cuda`. Please specify it via the `devices` argument of `register_backend`.
+  warnings.warn(
+[Memory] System RAM Usage: 7.8%
+Step 1: Building MedGemma 4B text model structure on cpu...
+Loading weights from ./medgemma-1.5-4b-pytorch...
+Model built successfully.
+Step 2: Initialize generative converter...
+Step 3: Tracing Text Decoder (Unquantized FP32, this will take a while)...
+Conversion failed: Unsupported quantization flag: None
+ERROR conda.cli.main_run:execute(142): `conda run python3 -u convert_text.py` failed. (See above for error)

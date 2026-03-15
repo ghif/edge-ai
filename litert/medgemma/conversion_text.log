@@ -1,23 +1,28 @@
 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
-I0000 00:00:1773423242.936475  108592 cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+I0000 00:00:1773567510.267852   27849 cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
 To enable the following instructions: AVX2 AVX512F FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
 Skipping import of cpp extensions due to incompatible torch version 2.9.1+cu128 for torchao version 0.16.0             Please see https://github.com/pytorch/ao/issues/2919 for more info
-/opt/conda/envs/mgenv/lib/python3.11/site-packages/torch/distributed/distributed_c10d.py:351: UserWarning: Device capability of jax unspecified, assuming `cpu` and `cuda`. Please specify it via the `devices` argument of `register_backend`.
+/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/torch/distributed/distributed_c10d.py:351: UserWarning: Device capability of jax unspecified, assuming `cpu` and `cuda`. Please specify it via the `devices` argument of `register_backend`.
   warnings.warn(
-W0000 00:00:1773423570.258623  110072 cpu_allocator_impl.cc:84] Allocation of 104857600 exceeds 10% of free system memory.
-W0000 00:00:1773423570.258579  110070 cpu_allocator_impl.cc:84] Allocation of 104857600 exceeds 10% of free system memory.
-W0000 00:00:1773423570.258699  110073 cpu_allocator_impl.cc:84] Allocation of 104857600 exceeds 10% of free system memory.
-W0000 00:00:1773423570.258744  110074 cpu_allocator_impl.cc:84] Allocation of 2685009920 exceeds 10% of free system memory.
-W0000 00:00:1773423570.258591  110071 cpu_allocator_impl.cc:84] Allocation of 104857600 exceeds 10% of free system memory.
-/var/tmp/tmpby1ejx1g: line 3: 108592 Killed                  python -u convert_text.py
-
-ERROR conda.cli.main_run:execute(125): `conda run python -u convert_text.py` failed. (See above for error)
-[Memory] System RAM Usage: 12.8%
-Step 1: Building MedGemma 4B text model structure...
+[Memory] System RAM Usage: 6.9%
+Step 1: Building MedGemma 4B text model structure on cpu...
+Loading weights from ./medgemma-1.5-4b-pytorch...
+Model built successfully.
 Step 2: Initialize generative converter...
-Step 3: Tracing Text Decoder with dynamic_int4_block32...
-[Heartbeat] RAM: 70.6%
-[Heartbeat] RAM: 70.9%
-[Heartbeat] RAM: 71.1%
-[Heartbeat] RAM: 71.9%
+Step 3: Tracing Text Decoder (Unquantized, this will take a while)...
+W0000 00:00:1773567845.506123   27849 tf_tfl_flatbuffer_helpers.cc:364] Ignored output_format.
+W0000 00:00:1773567845.506203   27849 tf_tfl_flatbuffer_helpers.cc:367] Ignored drop_control_dependency.
+I0000 00:00:1773567845.507173   27849 reader.cc:83] Reading SavedModel from: /home/mghifary/edge-ai/litert/medgemma/tmpjl8jdc_t
+I0000 00:00:1773567845.538661   27849 reader.cc:52] Reading meta graph with tags { serve }
+I0000 00:00:1773567845.538763   27849 reader.cc:147] Reading SavedModel debug info (if present) from: /home/mghifary/edge-ai/litert/medgemma/tmpjl8jdc_t
+I0000 00:00:1773567845.759579   27849 mlir_graph_optimization_pass.cc:437] MLIR V1 optimization pass is not enabled
+I0000 00:00:1773567845.788275   27849 loader.cc:236] Restoring SavedModel bundle.
+I0000 00:00:1773567848.626836   27849 loader.cc:220] Running initialization op on SavedModel bundle at path: /home/mghifary/edge-ai/litert/medgemma/tmpjl8jdc_t
+I0000 00:00:1773567849.000858   27849 loader.cc:471] SavedModel load for tags { serve }; Status: success: OK. Took 3493720 microseconds.
+I0000 00:00:1773567849.331283   27849 dump_mlir_util.cc:269] disabling MLIR crash reproducer, set env var `MLIR_CRASH_REPRODUCER_DIRECTORY` to enable.
+loc("litert_torch.generative.utilities.converter.ExportableModule/litert_torch.generative.examples.gemma3.decoder.Decoder_module/torch.nn.modules.sparse.Embedding_tok_embedding;"("embedding"("/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/torch/nn/modules/sparse.py":192:0))): error: failed to legalize operation 'tfl.embedding_lookup' that was explicitly marked illegal
+loc("litert_torch.generative.utilities.converter.ExportableModule/litert_torch.generative.examples.gemma3.decoder.Decoder_module/torch.nn.modules.sparse.Embedding_tok_embedding;"("embedding"("/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/torch/nn/modules/sparse.py":192:0))): error: failed to legalize operation 'tfl.embedding_lookup' that was explicitly marked illegal
+Conversion failed: /home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/torch/nn/modules/sparse.py:192:0: error: failed to legalize operation 'tfl.embedding_lookup' that was explicitly marked illegal
+/home/mghifary/miniforge3/envs/mgenv/lib/python3.11/site-packages/torch/nn/modules/sparse.py:192:0: error: failed to legalize operation 'tfl.embedding_lookup' that was explicitly marked illegal
 
+ERROR conda.cli.main_run:execute(142): `conda run python3 -u convert_text.py` failed. (See above for error)

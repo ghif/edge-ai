@@ -17,7 +17,7 @@ import cv2
 class MedGemmaMultimodal:
     def __init__(self, vision_model_path, text_model_path, tokenizer_path):
         print("Initializing Vision Encoder...")
-        # Load the INT4 quantized SigLIP + Projector LiteRT model
+        # Load the SigLIP + Projector LiteRT model
         self.vision_interpreter = ai_edge_torch.Interpreter(vision_model_path)
         self.vision_interpreter.allocate_tensors()
         
@@ -68,8 +68,8 @@ class MedGemmaMultimodal:
 
 if __name__ == '__main__':
     pipeline = MedGemmaMultimodal(
-        'medgemma-1.5-4b-vision-int4.tflite',
-        'medgemma-1.5-4b-text-int8.tflite',
+        'medgemma-1.5-4b-vision.tflite',
+        'medgemma-1.5-4b-text.tflite',
         'medgemma-1.5-4b-pytorch/tokenizer.model'
     )
     print(pipeline.generate('sample.jpg', 'What are the findings in this scan?'))
@@ -80,8 +80,8 @@ if __name__ == '__main__':
 
 def main():
     parser = argparse.ArgumentParser(description="MedGemma Bundler & Inference Wrapper")
-    parser.add_argument("--tflite_model", type=str, default="medgemma-1.5-4b-text-int8.tflite")
-    parser.add_argument("--vision_model", type=str, default="medgemma-1.5-4b-vision-int4.tflite")
+    parser.add_argument("--tflite_model", type=str, default="medgemma-1.5-4b-text.tflite")
+    parser.add_argument("--vision_model", type=str, default="medgemma-1.5-4b-vision.tflite")
     parser.add_argument("--tokenizer_model", type=str, default="medgemma-1.5-4b-pytorch/tokenizer.model")
     parser.add_argument("--output_filename", type=str, default="medgemma-1.5-4b-it.task")
     args = parser.parse_args()
@@ -91,10 +91,9 @@ def main():
         from mediapipe.tasks.python.genai import bundler
         
         if not os.path.exists(args.tflite_model):
-            print(f"Warning: {args.tflite_model} not found yet. Text conversion might still be running in the background.")
+            print(f"Warning: {args.tflite_model} not found yet.")
         
-        # Applying INT4 quantization during bundling if supported by GenAI bundler
-        # In 2026, MediaPipe GenAI bundler supports quantization during bundling.
+        # Unquantized bundling
         b_config = bundler.BundleConfig(
             tflite_model=args.tflite_model,
             tokenizer_model=args.tokenizer_model,
@@ -105,7 +104,7 @@ def main():
             prompt_suffix_user="<end_of_turn>\\n<start_of_turn>model\\n",
         )
         bundler.create_bundle(b_config)
-        print(f"Successfully created Task Bundle: {args.output_filename}")
+        print(f"Successfully created Unquantized Task Bundle: {args.output_filename}")
     except Exception as e:
         print(f"Bundling failed or skipped: {e}")
         
